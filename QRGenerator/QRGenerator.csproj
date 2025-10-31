@@ -9,6 +9,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\QRCharacteristics\QRCharacteristics.csproj" />
     <ProjectReference Include="..\QROptimizer\QROptimizer.csproj" />
   </ItemGroup>
 
