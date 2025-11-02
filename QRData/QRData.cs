@@ -1,108 +1,62 @@
 ﻿using System;
+using System.Collections.Generic;
 using static System.Net.Mime.MediaTypeNames;
 
 public class QRData
 {
     public List<bool> Data { get; private set; }
+    public QRVersion Version { get; private set; }
+    public QRErrorCorrectionLevel ErrorCorrectionLevel { get; private set; }
 
-    public QRData(List<bool> Data)
+    private static bool[][] Filling =
+    [
+        [ true, true, true, false, true, true, false, false ],
+        [ false, false, false, true, false, false, false, true ]
+    ];
+
+    public QRData(List<bool> data, QRVersion version, QRErrorCorrectionLevel errorCorrectionLevel)
     {
-        this.Data = Data;
+        Data = data;
+        ErrorCorrectionLevel = errorCorrectionLevel;
+        Version = version;
     }
 
-    public static QRData Parse(string parseString, QRVersion version)
+    public static QRData? Parse(string data, QRErrorCorrectionLevel level)
     {
-        int n = parseString.Length;
-        var dp = new int[n + 1];
-        var prev = new (int idx, QREncodingMode mode)[n + 1];
-        Array.Fill(dp, int.MaxValue / 2);
-        dp[0] = 0;
-
-        for (int i = 1; i <= n; i++)
+        List<List<bool>> dataList = [.. Enumerable.Repeat(new List<bool>(), QRVersionData.AllValues.Count)];
+        int versionLeft = 0, versionRight = dataList.Count + 1;
+        while (versionLeft + 1 < versionRight)
         {
-            foreach (var mode in QREncodingModeData.AllValues)
+            int versionAverage = (versionLeft + versionRight) / 2;
+
+            if (dataList[versionAverage].Count == 0)
             {
-                for (int j = 0; j < i; j++)
-                {
-                    if (!mode.CanEncode(parseString, j, i)) continue;
-
-                    int cost = mode.GetCost(parseString, j, i, version);
-                    if (dp[j] + cost < dp[i])
-                    {
-                        dp[i] = dp[j] + cost;
-                        prev[i] = (j, mode);
-                    }
-                }
+                dataList[versionAverage] = ((QRVersion)versionAverage).Parse(data);
             }
-        }
 
-        var allBits = new List<bool>();
-        var segments = new List<(int start, int end, QREncodingMode mode)>();
-        int cur = n;
-        while (cur > 0)
+            if (dataList[versionAverage].Count <= ((QRVersion)versionAverage).getBitLimit(level))
+                versionRight = versionAverage;
+            else
+                versionLeft = versionAverage;
+        }
+        if (versionRight == dataList.Count + 1)
         {
-            var (prevIdx, mode) = prev[cur];
-            segments.Add((prevIdx, cur, mode));
-            cur = prevIdx;
+            return null;
         }
-        segments.Reverse();
 
-        foreach (var (start, end, mode) in segments)
+
+        for (int index = 0; dataList[versionRight].Count < ((QRVersion)versionRight).getBitLimit(level); index = 1 - index)
         {
-            string text = parseString[start..end];
-
-            // Добавляем режим + счётчик + данные
-            allBits.AddRange(mode.Bit());
-            allBits.AddRange(QREncodingModeData.IntToBits(text.Length, mode.GetCountBits(version)));
-            var dataBits = mode.Encode()(text);
-            allBits.AddRange(dataBits);
-
-            // Тест для сегмента
-            int expectedCost = mode.GetCost(parseString, start, end, version);
-            int actualSegmentBits = 4 + mode.GetCountBits(version) + dataBits.Count;
-            System.Diagnostics.Debug.WriteLine(
-                $"[{start}..{end}) '{text}' → {mode}({expectedCost} → {actualSegmentBits})");
+            dataList[versionRight].AddRange(Filling[index]);
         }
-        System.Diagnostics.Debug.WriteLine($"Минимально: {dp[n]} бит");
-        System.Diagnostics.Debug.WriteLine($"По факту: {allBits.Count} бит");
 
-        // Добавляем один терминатор (4 нуля, или меньше, если места нет — но пока 4)
-        allBits.AddRange([false, false, false, false]);
+        System.Diagnostics.Debug.WriteLine("-----Found------------------------------");
+        System.Diagnostics.Debug.WriteLine($"Data: {dataList[versionRight].Count}({((QRVersion)versionRight).getBitLimit(level)})");
+        System.Diagnostics.Debug.WriteLine("Version: " + (QRVersion)versionRight);
+        System.Diagnostics.Debug.WriteLine("Error Correction Level: " + level);
+        System.Diagnostics.Debug.WriteLine("----------------------------------------");
 
-        // Паддинг до кратности 8 бит (нулями)
-        int padding = (8 - allBits.Count % 8) % 8;
-        allBits.AddRange(Enumerable.Repeat(false, padding));
-
-        System.Diagnostics.Debug.WriteLine($"По факту (+ терминатор + паддинг): {allBits.Count} бит");
-
-        return new QRData(allBits);
-    }
-
-    public static List<bool> Encode(int totalBits, string encodeString, int start, int end, QREncodingMode mode, QRVersion version)
-    {
-        var bitList = new List<bool>(totalBits);
-
-        string segmentText = encodeString[start..end];
-        int charCount = segmentText.Length;
-
-        // 1. Добавляем индикатор режима (4 бита)
-        bitList.AddRange(mode.Bit());
-
-        
-        // 2. Добавляем счетчик символов
-        bitList.AddRange(QREncodingModeData.IntToBits(charCount, QREncodingModeExtensions.GetCountBits(mode, version)));
-
-        // 3. Добавляем данные
-        bitList.AddRange(mode.Encode()(segmentText));
-
-        return bitList;
-    }
-
-    public static void Test(int bitCount, string str, int begin, int end, QREncodingMode mode, QRVersion version)
-    {
-        var cost = mode.GetCost(str, begin, end, version);
-        System.Diagnostics.Debug.WriteLine(
-            $"[{begin}..{end}) '{str.Substring(begin, end - begin)}' → {mode}({cost} → {bitCount})");
+        return new QRData(dataList[versionRight], (QRVersion)versionRight, level);
     }
 }
 

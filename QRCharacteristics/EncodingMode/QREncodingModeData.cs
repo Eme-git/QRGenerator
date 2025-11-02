@@ -4,13 +4,9 @@ using System.Threading.Tasks;
 
 public static class QREncodingModeData
 {
-    public static string AlphanumericChars = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ $%*+-./:";
-    public static IEnumerable<QREncodingMode> AllValues = [
-            QREncodingMode.Numeric,
-            QREncodingMode.Alphanumeric,
-            QREncodingMode.Byte,
-            QREncodingMode.Kanji,
-        ];
+    public static string AlphanumericChars { get; private set; } = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ $%*+-./:";
+    public static List<QREncodingMode> AllValues { get; private set; } 
+        = Enum.GetValues(typeof(QREncodingMode)).Cast<QREncodingMode>().ToList();
 
     public static Dictionary<QREncodingMode, (List<bool> BitPattern, Func<string, List<bool>> Encode)> Data { get; private set; } =
         new Dictionary<QREncodingMode, (List<bool> BitPattern, Func<string, List<bool>> Encode)>

@@ -2,17 +2,9 @@
 
 public static class QRMaskPatternData
 {
-    public static IEnumerable<QRMaskPattern> AllValues
-        = [
-            QRMaskPattern.Pattern000,
-            QRMaskPattern.Pattern001,
-            QRMaskPattern.Pattern010,
-            QRMaskPattern.Pattern011,
-            QRMaskPattern.Pattern100,
-            QRMaskPattern.Pattern101,
-            QRMaskPattern.Pattern110,
-            QRMaskPattern.Pattern111
-        ];
+    public static List<QRMaskPattern> AllValues { get; private set; }
+        = Enum.GetValues(typeof(QRMaskPattern)).Cast<QRMaskPattern>().ToList();
+
     public static Dictionary<QRMaskPattern, (List<bool> BitPattern, Func<bool, byte, byte, bool> Mask)> Data { get; private set; } =
         new Dictionary<QRMaskPattern, (List<bool>, Func<bool, byte, byte, bool>)>
         {

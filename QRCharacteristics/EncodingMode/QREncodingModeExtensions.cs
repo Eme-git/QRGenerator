@@ -71,6 +71,29 @@ public static class QREncodingModeExtensions
         _ => 0
     };
 
+    public static List<bool> Encode(this QREncodingMode mode, string data, QRVersion version)
+    {
+        var bitList = new List<bool>();
+
+        // 1. Добавляем индикатор режима (4 бита)
+        bitList.AddRange(mode.Bit());
+
+        // 2. Добавляем счетчик символов
+        int count;
+        if (mode == QREncodingMode.Byte)
+            count = Encoding.UTF8.GetByteCount(data);
+        else if (mode == QREncodingMode.Kanji)
+            count = data.Length; 
+        else
+            count = data.Length;
+        bitList.AddRange(QREncodingModeData.IntToBits(count, GetCountBits(mode, version)));
+
+        // 3. Добавляем данные
+        bitList.AddRange(mode.Encode()(data));
+
+        return bitList;
+    }
+
     public static List<bool> Bit(this QREncodingMode mode) => QREncodingModeData.Data[mode].BitPattern;
     public static Func<string, List<bool>> Encode(this QREncodingMode mode) => QREncodingModeData.Data[mode].Encode;
 }
