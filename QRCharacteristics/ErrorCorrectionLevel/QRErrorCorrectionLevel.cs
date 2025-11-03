@@ -1,8 +1,8 @@
 ﻿public enum QRErrorCorrectionLevel
 {
-    Low,
-    Medium,
-    Quartile,
-    High
+    L,
+    M,
+    Q,
+    H
 }
 

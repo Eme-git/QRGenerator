@@ -8,7 +8,7 @@ internal static class Program
     {
         Encoding.RegisterProvider(CodePagesEncodingProvider.Instance); // для Kanji
 
-        QRDataTest.Run("123HELLOкириллица007", QRErrorCorrectionLevel.High);
+        QRDataTest.Run("123HELLOкириллица007", QRErrorCorrectionLevel.H);
         
     }
 }

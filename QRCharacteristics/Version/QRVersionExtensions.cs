@@ -1,8 +1,14 @@
 ﻿
 public static class QRVersionExtensions
 {
-    public static int getBitLimit(this QRVersion version, QRErrorCorrectionLevel level) 
-        => QRVersionData.Data[(int)version, (int)level];
+    public static int BitLimit(this QRVersion version, QRErrorCorrectionLevel level) 
+        => QRVersionData.Data[(version, level)].BitLimit;
+
+    public static int BlockCount(this QRVersion version, QRErrorCorrectionLevel level)
+        => QRVersionData.Data[(version, level)].BlockCount;
+
+    public static int CorrectionByte(this QRVersion version, QRErrorCorrectionLevel level)
+        => QRVersionData.Data[(version, level)].CorrectionByte;
 
     public static List<bool> Parse(this QRVersion version, string data)
     {
@@ -59,15 +65,6 @@ public static class QRVersionExtensions
         }
         System.Diagnostics.Debug.WriteLine($"Минимально: {dp[n]} бит");
         System.Diagnostics.Debug.WriteLine($"По факту: {allBits.Count} бит");
-
-        // Добавляем один терминатор (4 нуля, или меньше, если места нет — но пока 4)
-        allBits.AddRange([false, false, false, false]);
-
-        // Паддинг до кратности 8 бит (нулями)
-        int padding = (8 - allBits.Count % 8) % 8;
-        allBits.AddRange(Enumerable.Repeat(false, padding));
-
-        System.Diagnostics.Debug.WriteLine($"По факту (+ терминатор + паддинг): {allBits.Count} бит");
 
         return allBits;
     }
