@@ -10,6 +10,19 @@ public static class QRVersionExtensions
     public static int CorrectionByte(this QRVersion version, QRErrorCorrectionLevel level)
         => QRVersionData.Data[(version, level)].CorrectionByte;
 
+    public static byte GaloisField(int index) => QRVersionData.GaloisField[index];
+
+    public static byte InverseGaloisField(int index) => QRVersionData.InverseGaloisField[index];
+
+    public static byte Multiply(byte a, byte b)
+    {
+        if (a == 0 || b == 0) return 0;
+        int logA = GaloisField(a);
+        int logB = GaloisField(b);
+        int logResult = (logA + logB) % 255;
+        return InverseGaloisField(logResult);
+    }
+
     public static List<bool> Parse(this QRVersion version, string data)
     {
         int n = data.Length;
