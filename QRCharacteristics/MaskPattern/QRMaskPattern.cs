@@ -1,11 +1,11 @@
 ﻿public enum QRMaskPattern
 {
-    Pattern000,
-    Pattern001,
-    Pattern010,
-    Pattern011,
-    Pattern100,
-    Pattern101,
-    Pattern110,
-    Pattern111
+    Pattern0,
+    Pattern1,
+    Pattern2,
+    Pattern3,
+    Pattern4,
+    Pattern5,
+    Pattern6,
+    Pattern7
 }

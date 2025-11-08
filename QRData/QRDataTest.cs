@@ -14,6 +14,21 @@ public static class QRDataTest
 
         // 2. Получаем блоки с EC
         var blocks = QRData.BlockedData(qrData);
+
+
+
+
+
+        foreach (var item in QRVersionData.AllValues)
+        {
+            System.Diagnostics.Debug.Write(item + ") ");
+
+            foreach (var i in item.AlignmentPatternsPositions())
+            {
+                System.Diagnostics.Debug.Write(i + " ");
+            }
+            System.Diagnostics.Debug.WriteLine("");
+        }
     }
 }
 

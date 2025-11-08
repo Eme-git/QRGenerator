@@ -7,8 +7,7 @@ internal static class Program
     static void Main()
     {
         Encoding.RegisterProvider(CodePagesEncodingProvider.Instance); // для Kanji
-
-        QRDataTest.Run("123HELLOкириллица007", QRErrorCorrectionLevel.H);
         
+            QRGenerator.Generate(new QRData(new List<bool>(), QRVersion.V7, QRErrorCorrectionLevel.H));
     }
 }
