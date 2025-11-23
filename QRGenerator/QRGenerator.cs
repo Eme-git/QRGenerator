@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Drawing;
 using System.Drawing.Imaging;
+using System.Reflection;
 using System.Windows.Forms.VisualStyles;
 using static System.Net.Mime.MediaTypeNames;
 using static System.Windows.Forms.AxHost;
@@ -138,6 +139,7 @@ public static class QRGenerator
         AddVersionCode(image, version);
 
         List<Bitmap> images = new List<Bitmap>(QRMaskPatternData.AllValues.Count);
+        List<int> points = new List<int>(images.Count);
         foreach (var pattern in QRMaskPatternData.AllValues)
         {
             images.Add(new Bitmap(image));
@@ -146,8 +148,35 @@ public static class QRGenerator
 
             AddData(images.Last(), pattern, data, NoColor);
 
+            points.Add(EvaluateQrMask.EvaluateQr(image));
+
             images.Last().Save($"try_{pattern}.png"); // --------
         }
+
+        image = images[points.IndexOf(points.Max())];
+
+        AddQuietZone(image).Save("QR-Code.png");
+    }
+
+    private static Bitmap AddQuietZone(Bitmap originalBitmap, int borderSize = 4)
+    {
+        // Новые размеры с учетом рамки
+        int newWidth = originalBitmap.Width + 2 * borderSize;
+        int newHeight = originalBitmap.Height + 2 * borderSize;
+
+        // Создаем новый bitmap с белым фоном
+        Bitmap newBitmap = new Bitmap(newWidth, newHeight, PixelFormat.Format32bppArgb);
+
+        using (Graphics graphics = Graphics.FromImage(newBitmap))
+        {
+            // Заливаем белым цветом (рамка)
+            graphics.Clear(Color.White);
+
+            // Копируем оригинальное изображение в центр
+            graphics.DrawImage(originalBitmap, borderSize, borderSize);
+        }
+
+        return newBitmap;
     }
 
     private static void AddData(Bitmap image, QRMaskPattern pattern, List<bool> data, Color NoColor)
