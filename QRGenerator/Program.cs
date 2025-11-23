@@ -8,6 +8,6 @@ internal static class Program
     {
         Encoding.RegisterProvider(CodePagesEncodingProvider.Instance); // для Kanji
         
-            QRGenerator.Generate(new QRData(new List<bool>(), QRVersion.V7, QRErrorCorrectionLevel.H));
+        QRGenerator.Generate(new QRData("1234567890QWERTY!!_", QRErrorCorrectionLevel.L));
     }
 }

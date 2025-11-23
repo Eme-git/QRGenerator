@@ -1,5 +1,8 @@
 ﻿using System;
 using System.Drawing;
+using System.Drawing.Imaging;
+using System.Windows.Forms.VisualStyles;
+using static System.Net.Mime.MediaTypeNames;
 
 public static class QRGenerator
 {
@@ -69,9 +72,10 @@ public static class QRGenerator
         }
     }
 
-    public static void AddVersionCode(Bitmap image, QRVersion version)
+    private static void AddVersionCode(Bitmap image, QRVersion version)
     {
         var code = version.Code();
+
         for (int i = 0; i < code.Length; ++i)
         {
             for (int ind = 0; ind < 6; ++ind)
@@ -84,7 +88,7 @@ public static class QRGenerator
         }
     }
 
-    public static void AddMaskCodeAndCorrectionLevel
+    private static void AddMaskCodeAndCorrectionLevel
         (Bitmap image, QRMaskPattern pattern, QRErrorCorrectionLevel level)
     {
         short code = QRMaskPatternExtensions.MaskCodeAndCorrectionLevel(pattern, level);
@@ -126,14 +130,75 @@ public static class QRGenerator
         var size = version.Size();
 
         Bitmap image = new Bitmap(size, size);
+        Color NoColor = image.GetPixel(0, 0);
 
         AddPatterns(image, version.AlignmentPatternsPositions());
 
         AddVersionCode(image, version);
 
-        AddMaskCodeAndCorrectionLevel(image, QRMaskPattern.Pattern0, level);
+        List<Bitmap> images = new List<Bitmap>(QRMaskPatternData.AllValues.Count);
+        foreach (var pattern in QRMaskPatternData.AllValues)
+        {
+            images.Add(new Bitmap(image));
 
-        image.Save("try1.png");
+            AddMaskCodeAndCorrectionLevel(images.Last(), pattern, level);
+
+            AddData(images.Last(), pattern, data, NoColor);
+
+            images.Last().Save($"try_{pattern}.png"); // --------
+        }
+    }
+
+    private static void AddData(Bitmap image, QRMaskPattern pattern, List<bool> data, Color NoColor)
+    {
+        int i = image.Width - 1;
+        int j = image.Height - 1;
+        int size = image.Height;
+
+        int k = 0;
+        foreach (var state in data)
+        {
+            while (image.GetPixel(i, j) != NoColor)
+                NextPosition(ref i, ref j, ref size);
+
+            ++k;
+            image.SetPixel(i, j, pattern.Func()(state, i, j) ? Color.Black : Color.White);
+            image.Save($"try_{pattern}.png");
+        }
+        k = 0;
+    }
+
+    private static void NextPosition(ref int i, ref int j, ref int size)
+    {
+        if (i < 6) ++i;
+
+
+        if (i % 2 == 0)
+        {
+            --i;
+        }
+        else
+        {
+            ++i;
+            if (i % 4 == 0)
+                --j;
+            else
+                ++j;
+        }
+
+        if (j == -1)
+        {
+            i -= 2;
+            j = 0;
+        }
+
+        if (j == size)
+        {
+            i -= 2;
+            j = size - 1;
+        }
+
+        if (i <= 6) --i;
     }
 }
 

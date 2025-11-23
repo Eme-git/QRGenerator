@@ -8,7 +8,14 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Элементы решения", "Элементы решения", "{754FC069-D67B-A9D7-50A1-8D1CA196D8F1}"
 	ProjectSection(SolutionItems) = preProject
 		README.md = README.md
-		QRGenerator\bin\Debug\net8.0-windows\try1.png = QRGenerator\bin\Debug\net8.0-windows\try1.png
+		QRGenerator\bin\Debug\net8.0-windows\try_Pattern0.png = QRGenerator\bin\Debug\net8.0-windows\try_Pattern0.png
+		QRGenerator\bin\Debug\net8.0-windows\try_Pattern1.png = QRGenerator\bin\Debug\net8.0-windows\try_Pattern1.png
+		QRGenerator\bin\Debug\net8.0-windows\try_Pattern2.png = QRGenerator\bin\Debug\net8.0-windows\try_Pattern2.png
+		QRGenerator\bin\Debug\net8.0-windows\try_Pattern3.png = QRGenerator\bin\Debug\net8.0-windows\try_Pattern3.png
+		QRGenerator\bin\Debug\net8.0-windows\try_Pattern4.png = QRGenerator\bin\Debug\net8.0-windows\try_Pattern4.png
+		QRGenerator\bin\Debug\net8.0-windows\try_Pattern5.png = QRGenerator\bin\Debug\net8.0-windows\try_Pattern5.png
+		QRGenerator\bin\Debug\net8.0-windows\try_Pattern6.png = QRGenerator\bin\Debug\net8.0-windows\try_Pattern6.png
+		QRGenerator\bin\Debug\net8.0-windows\try_Pattern7.png = QRGenerator\bin\Debug\net8.0-windows\try_Pattern7.png
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "QRCharacteristics", "QRCharacteristics\QRCharacteristics.csproj", "{6E9EC0CA-4A8D-4B44-B7A8-18E6FC16F74F}"

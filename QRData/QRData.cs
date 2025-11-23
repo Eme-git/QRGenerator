@@ -15,6 +15,16 @@ public class QRData
         [ false, false, false, true, false, false, false, true ]
     ];
 
+    public QRData(QRData other)
+    {
+        Data = other.Data;
+        Version = other.Version;
+        ErrorCorrectionLevel = other.ErrorCorrectionLevel;
+    }
+
+    public QRData(string data, QRErrorCorrectionLevel level) :
+        this(Parse(data, level)) { }
+
     public QRData(List<bool> data, QRVersion version, QRErrorCorrectionLevel errorCorrectionLevel)
     {
         Data = data;
@@ -45,11 +55,16 @@ public class QRData
             System.Diagnostics.Debug.WriteLine("=====NotFound(to many data)=============");
             return null;
         }
-        
-        return Padding(new QRData(dataList[versionRight], (QRVersion)versionRight, level));
+
+        QRData result = new QRData(dataList[versionRight], (QRVersion)versionRight, level);
+
+        CreatePadding(result);
+        CreateCorrectionBytes(result);
+
+        return result;
     }
 
-    private static QRData Padding(QRData data)
+    private static void CreatePadding(QRData data)
     {
         System.Diagnostics.Debug.WriteLine("=====Found==============================");
         System.Diagnostics.Debug.WriteLine($"\tUseful data: {data.Data.Count}");
@@ -79,10 +94,9 @@ public class QRData
         System.Diagnostics.Debug.WriteLine($"Version: {data.Version}");
         System.Diagnostics.Debug.WriteLine($"Error Correction Level: {data.ErrorCorrectionLevel}");
         System.Diagnostics.Debug.WriteLine("========================================");
-        return data;
     }
 
-    public static List<byte> BlockedData(QRData data)
+    private static void CreateCorrectionBytes(QRData data)
     {
         List<byte> bytes = ConvertBoolListToByteList(data.Data);
 
@@ -107,7 +121,7 @@ public class QRData
 
         List<byte> finalData = [.. InterleaveDataBytes(blocks), .. InterleaveDataBytes(correctionBytes)];
 
-        return finalData;
+        data.Data = ConvertByteListToBoolList(finalData);
     }
 
     private static List<byte> InterleaveDataBytes(List<List<byte>> dataBlocks)
@@ -129,7 +143,7 @@ public class QRData
         return interleavedData;
     }
 
-    public static List<byte> CreateCorrectionBytes(List<byte> bytes, List<byte> polynomial) {
+    private static List<byte> CreateCorrectionBytes(List<byte> bytes, List<byte> polynomial) {
         List<byte> remainder = [..bytes, .. Enumerable.Repeat((byte)0, Math.Max(0, polynomial.Count - bytes.Count))]; 
         
 
@@ -150,7 +164,7 @@ public class QRData
         return remainder; 
     }
 
-    public static List<byte> ConvertBoolListToByteList(List<bool> bools)
+    private static List<byte> ConvertBoolListToByteList(List<bool> bools)
     {
         List<byte> bytes = new List<byte>();
 
@@ -171,4 +185,20 @@ public class QRData
         return bytes;
     }
 
+
+    private static List<bool> ConvertByteListToBoolList(List<byte> bytes)
+    {
+        List<bool> bools = new List<bool>();
+
+        foreach (byte currentByte in bytes)
+        {
+            for (int j = 0; j < 8; j++)
+            {
+                bool bitValue = (currentByte & (1 << (7 - j))) != 0;
+                bools.Add(bitValue);
+            }
+        }
+
+        return bools;
+    }
 }

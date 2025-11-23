@@ -5,8 +5,8 @@ public static class QRMaskPatternData
     public static List<QRMaskPattern> AllValues { get; private set; }
         = Enum.GetValues(typeof(QRMaskPattern)).Cast<QRMaskPattern>().ToList();
 
-    public static Dictionary<QRMaskPattern, (List<bool> BitPattern, Func<bool, byte, byte, bool> Mask)> Data { get; private set; } =
-        new Dictionary<QRMaskPattern, (List<bool>, Func<bool, byte, byte, bool>)>
+    public static Dictionary<QRMaskPattern, (List<bool> BitPattern, Func<bool, int, int, bool> Mask)> Data { get; private set; } =
+        new Dictionary<QRMaskPattern, (List<bool>, Func<bool, int, int, bool>)>
         {
             {
                 QRMaskPattern.Pattern0,
