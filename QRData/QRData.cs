@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Reflection.Emit;
 using static System.Net.Mime.MediaTypeNames;
 
@@ -23,7 +24,8 @@ public class QRData
     }
 
     public QRData(string data, QRErrorCorrectionLevel level) :
-        this(Parse(data, level)) { }
+        this(Parse(data, level))
+    { }
 
     public QRData(List<bool> data, QRVersion version, QRErrorCorrectionLevel errorCorrectionLevel)
     {
@@ -103,8 +105,9 @@ public class QRData
         List<List<byte>> blocks = new List<List<byte>>();
         List<List<byte>> correctionBytes = new List<List<byte>>();
 
-        List<byte> polynomial 
-            = QRErrorCorrectionLevelExtensions.GeneratingPolynomial(data.Version.CorrectionByte(data.ErrorCorrectionLevel));
+        int correctionBytesCount = data.Version.CorrectionByte(data.ErrorCorrectionLevel);
+        List<byte> polynomial
+            = QRErrorCorrectionLevelExtensions.GeneratingPolynomial(correctionBytesCount);
 
         int blockCount = data.Version.BlockCount(data.ErrorCorrectionLevel);
         int countDiv = bytes.Count / blockCount;
@@ -143,25 +146,26 @@ public class QRData
         return interleavedData;
     }
 
-    private static List<byte> CreateCorrectionBytes(List<byte> bytes, List<byte> polynomial) {
-        List<byte> remainder = [..bytes, .. Enumerable.Repeat((byte)0, Math.Max(0, polynomial.Count - bytes.Count))]; 
-        
+    private static List<byte> CreateCorrectionBytes(List<byte> bytes, List<byte> polynomial)
+    {
+        List<byte> remainder = [.. bytes, .. Enumerable.Repeat((byte)0, Math.Max(0, polynomial.Count - bytes.Count))];
 
-        for (int index = 0; index < bytes.Count; ++index) 
-        { 
+
+        for (int index = 0; index < bytes.Count; ++index)
+        {
             int a = remainder[0];
             remainder.RemoveAt(0);
             remainder.Add(0);
-            if (a == 0) continue; 
-            int b = QRVersionExtensions.InverseGaloisField(a); 
-            for (int i = 0; i < polynomial.Count; ++i) 
-            { 
-                int B = polynomial[i] + b; 
+            if (a == 0) continue;
+            int b = QRVersionExtensions.InverseGaloisField(a);
+            for (int i = 0; i < polynomial.Count; ++i)
+            {
+                int B = polynomial[i] + b;
                 B %= 255;
-                remainder[i] ^= QRVersionExtensions.GaloisField(B); 
-            } 
-        } 
-        return remainder; 
+                remainder[i] ^= QRVersionExtensions.GaloisField(B);
+            }
+        }
+        return remainder.GetRange(0, polynomial.Count);
     }
 
     private static List<byte> ConvertBoolListToByteList(List<bool> bools)

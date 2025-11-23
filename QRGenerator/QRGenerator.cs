@@ -3,6 +3,7 @@ using System.Drawing;
 using System.Drawing.Imaging;
 using System.Windows.Forms.VisualStyles;
 using static System.Net.Mime.MediaTypeNames;
+using static System.Windows.Forms.AxHost;
 
 public static class QRGenerator
 {
@@ -155,17 +156,20 @@ public static class QRGenerator
         int j = image.Height - 1;
         int size = image.Height;
 
-        int k = 0;
         foreach (var state in data)
         {
             while (image.GetPixel(i, j) != NoColor)
                 NextPosition(ref i, ref j, ref size);
 
-            ++k;
             image.SetPixel(i, j, pattern.Func()(state, i, j) ? Color.Black : Color.White);
-            image.Save($"try_{pattern}.png");
         }
-        k = 0;
+
+        while (i >= 0)
+        {
+            if (image.GetPixel(i, j) == NoColor)
+                image.SetPixel(i, j, pattern.Func()(false, i, j) ? Color.Black : Color.White);
+            NextPosition(ref i, ref j, ref size);
+        }
     }
 
     private static void NextPosition(ref int i, ref int j, ref int size)
